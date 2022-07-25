@@ -3,9 +3,6 @@
 
 #include <assert.h>
 
-int MULT_BLOCK_SIZE = 8;
-int SUM_DIVIDER = 8;
-
 namespace gpu {
 
 // prototype data sub-structures and math functions
@@ -13,7 +10,7 @@ template <class T> class Matrix2D;
 template <class T> class Matrix1D;
 template <class T> class Vector1D;
 template <class T> class device_ptr;
-template <class T, class V> Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
+template <class T, class V> Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y=NULL);
 
 /* A 3D matrix, which is essentially a list of 2D matrixes.
  * Data is stored contiguously in device memory, and indexing returns a 
@@ -270,7 +267,7 @@ class device_ptr {
  * \param[y] Pointer to output vector to write to (should != x). If NULL, new vector will be created.
  */
 template <class T, class V>
-Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y=NULL);
+Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
 
 }
 #endif
