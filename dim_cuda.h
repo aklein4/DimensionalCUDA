@@ -182,7 +182,7 @@ class Matrix1D {
         // whether this is a sub-matrix, if not then data must be deleted
         bool internal_;
         // an array to hold the device pointers to memory
-        device_ptr* ptrs_;
+        device_ptr<T>* ptrs_;
         // create sub-data array
         void process();
 };
@@ -233,7 +233,7 @@ class Vector1D {
         // pointer to memory chunk containing data
         T* data_;
         // an array to hold the device pointers to memory
-        device_ptr* ptrs_;
+        device_ptr<T>* ptrs_;
         // create sub-data array
         void process();
 };
@@ -270,7 +270,7 @@ class device_ptr {
  * \param[y] Pointer to output vector to write to (should != x). If NULL, new vector will be created.
  */
 template <class T, class V>
-Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
+Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y=NULL);
 
 }
 #endif
