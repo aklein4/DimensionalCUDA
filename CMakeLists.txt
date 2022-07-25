@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.8.1)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
-
 enable_language("CUDA")
+
+project(DimensionalCUDA)
 
 file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/*.cpp")
 file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/*.cu")
