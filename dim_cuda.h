@@ -127,7 +127,7 @@ class Matrix2D {
         void process();
 };
 
-/* A 1D matrix (transpose of vector), whose data is stored contigously in memory.
+/* A 1D row matrix (transpose of vector), whose data is stored contigously in device memory.
  * Indexing returns a reference to an entry in that memory.
  */
 template <class T>
@@ -173,6 +173,54 @@ class Matrix1D {
         T* data_;
         // whether this is a sub-matrix, if not then data must be deleted
         bool internal_;
+        // an array to hold the device pointers to memory
+        device_ptr* ptrs_;
+        // create sub-data array
+        void process();
+};
+
+/* A 1D column vector, whose data is stored contigously in device memory.
+ * Indexing returns a reference to an entry in that memory.
+ */
+template <class T>
+class Vector1D {
+    public:
+        /* Create a 1D matrix of the specified size.
+         * Data will be allocated and deleted upon deconstuction.
+         * \param[in] size Length of the vector
+         * \param[in] preprocess Create indexable objects at contruction, otherwise at first index. Default: true
+         */
+        Vector1D(size_t size, bool preprocess=true);
+        /* Deconstuction only deletes data if it was created in the constructor */
+        ~Vector1D();
+
+        /* Return a reference to a piece of the contiguous memory.
+         */
+        T& operator [](size_t i) const {
+            assert(i < size_);
+            if (ptrs_ == NULL) process();
+            return ptrs_[i];
+        };
+
+        /* read data from the device.
+         * If no buffer given, one will be new allocated and must be freed by caller.
+         * \param[in] buf Buffer to write memory into. */
+        void write(T* buf);
+        /* Write the contents of the buffer into device memory.
+         * \param[in] buf Buffer to copy from.
+         */
+        T* read(T* buf=NULL);
+
+        /* \return Width of row */
+        size_t size() {return size_; };
+
+    private:
+        // dimensions
+        size_t size_;
+        // size of the array in bytes
+        size_t size_bytes;
+        // pointer to memory chunk containing data
+        T* data_;
         // an array to hold the device pointers to memory
         device_ptr* ptrs_;
         // create sub-data array

@@ -99,10 +99,10 @@ Matrix2D<T>::~Matrix2D() {
 template <class T>
 void Matrix2D<T>::process() {
     // create an array of 2D matrices to return if indexed
-    layer_ = new Matrix1D<T>[column_h_];
+    layer_ = new Vector1D<T>[column_h_];
     for (int i=0; i < row_w_; i++) {
         // each matrix should reference piece of memory
-        layer_[i] = Matrix1D<T>(row_w_, data_+(i*row_w_));
+        layer_[i] = Vector1D<T>(row_w_, data_+(i*row_w_));
     }
 }
 
@@ -165,7 +165,7 @@ void Matrix1D<T>::process() {
     ptrs_ = new device_ptr<T>[row_w_];
     for (int i=0; i < row_w_; i++) {
         // each matrix should reference piece of memory
-        ptrs_[i] = device_ptr<T>();
+        ptrs_[i] = device_ptr<T>(data_+i);
     }
 }
 
@@ -179,6 +179,61 @@ void Matrix1D<T>::write(T* buf) {
 
 template <class T>
 T* Matrix1D<T>::read(T* buf) {
+    if (buf == NULL) {
+        buf = new T[row_w_];
+    }
+
+    cudaError_t rval = cudaMemcpy(buf, data_, size_bytes, cudaMemcpyDeviceToHost);
+    assert(rval == cudaSuccess);
+    return buf;
+}
+
+
+template <class T>
+Vector1D<T>::Vector1D(size_t size, bool preprocess=true) {
+    // set dimensions
+    size_ = size;
+    size_bytes = sizeof(T) * size_;
+
+    // Allocate data
+    cudaError_t rval = cudaMalloc(&data_, size_bytes);
+    assert(rval == cudaSuccess);
+
+    // only process if needed
+    if (preprocess) {
+        process();
+    }
+    else {
+        ptrs_ = NULL;
+    }
+}
+
+template <class T>
+Vector1D<T>::~Vector1D() {
+    if (ptrs_ != NULL) delete[] ptrs_;
+    cudaFree(data_);
+}
+
+template <class T>
+void Vector1D<T>::process() {
+    // create an array of 2D matrices to return if indexed
+    ptrs_ = new device_ptr<T>[size];
+    for (int i=0; i < row_w_; i++) {
+        // each matrix should reference piece of memory
+        ptrs_[i] = device_ptr<T>(data_+i);
+    }
+}
+
+template <class T>
+void Vector1D<T>::write(T* buf) {
+    assert(buf != NULL);
+
+    cudaError_t rval = cudaMemcpy(data_, buf, size_bytes, cudaMemcpyHostToDevice);
+    assert(rval == cudaSuccess);
+}
+
+template <class T>
+T* Vector1D<T>::read(T* buf) {
     if (buf == NULL) {
         buf = new T[row_w_];
     }
