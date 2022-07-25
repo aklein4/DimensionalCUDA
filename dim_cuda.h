@@ -3,9 +3,6 @@
 
 #include <assert.h>
 
-int MULT_BLOCK_SIZE = 8;
-int SUM_DIVIDER = 8;
-
 namespace gpu {
 
 // prototype data sub-structures and math functions
@@ -13,7 +10,7 @@ template <class T> class Matrix2D;
 template <class T> class Matrix1D;
 template <class T> class Vector1D;
 template <class T> class device_ptr;
-template <class T, class V> Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
+template <class T, class V> Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y=NULL);
 
 /* A 3D matrix, which is essentially a list of 2D matrixes.
  * Data is stored contiguously in device memory, and indexing returns a 
@@ -36,7 +33,7 @@ class Matrix3D {
 
         /* Return a 2D matrix which references a piece of the contiguous memory.
          */
-        Matrix2D<T>& operator [](size_t i) const {
+        Matrix2D<T>& operator [](size_t i) {
             assert(i < num_layers_);
             if (list_ == NULL) process();
             return list_[i];
@@ -96,7 +93,7 @@ class Matrix2D {
         
         /* Return a 1D matrix which references a piece of the contiguous memory.
          */
-        Matrix1D<T>& operator [](size_t i) const {
+        Matrix1D<T>& operator [](size_t i) {
             assert(i < column_h_);
             if (layer_ == NULL) process();
             return layer_[i];
@@ -154,7 +151,7 @@ class Matrix1D {
 
         /* Return a reference to a piece of the contiguous memory.
          */
-        T& operator [](size_t i) const {
+        device_ptr<T>& operator [](size_t i) {
             assert(i < row_w_);
             if (ptrs_ == NULL) process();
             return ptrs_[i];
@@ -204,7 +201,7 @@ class Vector1D {
 
         /* Return a reference to a piece of the contiguous memory.
          */
-        T& operator [](size_t i) const {
+        device_ptr<T>& operator [](size_t i) {
             assert(i < size_);
             if (ptrs_ == NULL) process();
             return ptrs_[i];
@@ -270,7 +267,7 @@ class device_ptr {
  * \param[y] Pointer to output vector to write to (should != x). If NULL, new vector will be created.
  */
 template <class T, class V>
-Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y=NULL);
+Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
 
 }
 #endif
