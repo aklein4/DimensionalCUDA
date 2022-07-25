@@ -3,12 +3,17 @@
 
 #include <assert.h>
 
+int MULT_BLOCK_SIZE = 8;
+int SUM_DIVIDER = 8;
+
 namespace gpu {
 
-// prototype data sub-structures
+// prototype data sub-structures and math functions
 template <class T> class Matrix2D;
 template <class T> class Matrix1D;
+template <class T> class Vector1D;
 template <class T> class device_ptr;
+template <class T, class V> Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
 
 /* A 3D matrix, which is essentially a list of 2D matrixes.
  * Data is stored contiguously in device memory, and indexing returns a 
@@ -110,6 +115,9 @@ class Matrix2D {
         size_t height() {return column_h_; };
         /* \return Width of row */
         size_t width() {return row_w_; };
+
+        /* Friend Functions */
+        template <class T, class V> Vector1D<T>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
 
     private:
         // dimensions
@@ -214,6 +222,9 @@ class Vector1D {
         /* \return Width of row */
         size_t size() {return size_; };
 
+        /* Friend Functions */
+        template <class T, class V> Vector1D<T>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
+
     private:
         // dimensions
         size_t size_;
@@ -252,6 +263,14 @@ class device_ptr {
         // whether this is a sub-object, if not then data must be deleted
         bool internal_;
 };
+
+/* Multiply a vector and a 2D matrix and store the result to another vector
+ * \param[A] Matrix to use in multiplication
+ * \param[x] Vector to use in multiplication
+ * \param[y] Pointer to output vector to write to (should != x). If NULL, new vector will be created.
+ */
+template <class T, class V>
+Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
 
 }
 #endif
