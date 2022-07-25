@@ -36,7 +36,7 @@ class Matrix3D {
 
         /* Return a 2D matrix which references a piece of the contiguous memory.
          */
-        Matrix2D<T>& operator [](size_t i) const {
+        Matrix2D<T>& operator [](size_t i) {
             assert(i < num_layers_);
             if (list_ == NULL) process();
             return list_[i];
@@ -96,7 +96,7 @@ class Matrix2D {
         
         /* Return a 1D matrix which references a piece of the contiguous memory.
          */
-        Matrix1D<T>& operator [](size_t i) const {
+        Matrix1D<T>& operator [](size_t i) {
             assert(i < column_h_);
             if (layer_ == NULL) process();
             return layer_[i];
@@ -154,7 +154,7 @@ class Matrix1D {
 
         /* Return a reference to a piece of the contiguous memory.
          */
-        T& operator [](size_t i) const {
+        device_ptr<T>& operator [](size_t i) {
             assert(i < row_w_);
             if (ptrs_ == NULL) process();
             return ptrs_[i];
@@ -204,7 +204,7 @@ class Vector1D {
 
         /* Return a reference to a piece of the contiguous memory.
          */
-        T& operator [](size_t i) const {
+        device_ptr<T>& operator [](size_t i) {
             assert(i < size_);
             if (ptrs_ == NULL) process();
             return ptrs_[i];
