@@ -1,6 +1,9 @@
 
 #include "dim_cuda.h"
 
+int MULT_BLOCK_SIZE = 8;
+int SUM_DIVIDER = 8;
+
 using namespace gpu;
 
 template <class T>
