@@ -6,7 +6,7 @@ message(STATUS "CMake version: ${CMAKE_VERSION}")
 # cuda setup
 enable_language("CUDA")
 if(NOT DEFINED ${CMAKE_CUDA_ARCHITECTURES})
-    set(CMAKE_CUDA_ARCHITECTURES 52 61 75)
+    set(CMAKE_CUDA_ARCHITECTURES 86)
 endif()
 message(STATUS "CUDA architectures set to ${CMAKE_CUDA_ARCHITECTURES}")
 
