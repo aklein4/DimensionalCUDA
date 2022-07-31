@@ -1,5 +1,5 @@
 #include <iostream>
-#include "dim_cuda.cuh"
+#include "gpu_types.cuh"
 
 int main() {
     size_t test_size = 128;

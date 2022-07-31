@@ -12,7 +12,6 @@ template <class T> class Matrix2D;
 template <class T> class Matrix1D;
 template <class T> class Vector1D;
 template <class T> class device_ptr;
-template <class T, class V> Vector1D<V>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y=NULL);
 
 /* A 3D matrix, which is essentially a list of 2D matrixes.
  * Data is stored contiguously in device memory, and indexing returns a 
@@ -57,20 +56,20 @@ class Matrix3D {
             return list_[i];
         };
 
-        /* read data from the device.
-         * If no buffer given, one will be new allocated and must be freed by caller.
-         * \param[in] buf Buffer to write memory into. */
-        void write(T* buf){
+        /* Write the contents of the buffer into device memory.
+         * \param[in] buf Buffer to copy from.
+         */
+        void write(T* buf) {
             assert(buf != NULL);
 
             cudaError_t rval = cudaMemcpy(data_, buf, size_bytes, cudaMemcpyHostToDevice);
             assert(rval == cudaSuccess);
         };
 
-        /* Write the contents of the buffer into device memory.
-         * \param[in] buf Buffer to copy from.
-         */
-        T* read(T* buf=NULL) {
+        /* read data from the device.
+         * If no buffer given, one will be new allocated and must be freed by caller.
+         * \param[in] buf Buffer to write memory into. */
+        T* read(T* buf=NULL) const {
             if (buf == NULL) {
                 buf = new T[num_layers_ * column_h_ * row_w_];
             }
@@ -81,11 +80,14 @@ class Matrix3D {
         };
     
         /* \return Number of 2D sub-matrices */
-        size_t num() {return num_layers_; };
+        size_t num() const {return num_layers_; };
         /* \return Height of column */
-        size_t height() {return column_h_; };
+        size_t height() const {return column_h_; };
         /* \return Width of row */
-        size_t width() {return row_w_; };
+        size_t width() const {return row_w_; };
+
+        /* \return a pointer to the data buffer. */
+        T* get_data() const {return data_; };
 
     private:
         // dimensions
@@ -103,7 +105,7 @@ class Matrix3D {
         std::vector<Matrix2D<T>> list_;
 
         // create sub-data array
-        void process(){
+        void process() {
             if (list_.size() != 0) return;
 
             for (int i=0; i < num_layers_; i++) {
@@ -153,9 +155,9 @@ class Matrix2D {
             if (!internal_) cudaFree(data_);
         };
         
-        /* Return a 1D matrix which references a piece of the contiguous memory.
-         * If a sub-matrix vector has not been created, it is created.
-         */
+        /* read data from the device.
+         * If no buffer given, one will be new allocated and must be freed by caller.
+         * \param[in] buf Buffer to write memory into. */
         Matrix1D<T>& operator [](size_t i) {
             assert(i < column_h_);
 
@@ -164,9 +166,9 @@ class Matrix2D {
             return layer_[i];
         };
 
-        /* read data from the device.
-         * If no buffer given, one will be new allocated and must be freed by caller.
-         * \param[in] buf Buffer to write memory into. */
+        /* Return a 1D matrix which references a piece of the contiguous memory.
+         * If a sub-matrix vector has not been created, it is created.
+         */
         void write(T* buf)  {
             assert(buf != NULL);
 
@@ -177,7 +179,7 @@ class Matrix2D {
         /* Write the contents of the buffer into device memory.
          * \param[in] buf Buffer to copy from.
          */
-        T* read(T* buf=NULL)  {
+        T* read(T* buf=NULL) const {
             if (buf == NULL) {
                 buf = new T[row_w_ * column_h_];
             }
@@ -189,12 +191,12 @@ class Matrix2D {
         };
 
         /* \return Height of column */
-        size_t height() {return column_h_; };
+        size_t height() const {return column_h_; };
         /* \return Width of row */
-        size_t width() {return row_w_; };
+        size_t width() const {return row_w_; };
 
-        /* Friend Functions */
-        template <class T, class V> Vector1D<T>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
+        /* \return a pointer to the data buffer. */
+        T* get_data() const {return data_; };
 
     private:
         // dimensions
@@ -269,9 +271,9 @@ class Matrix1D {
             return ptrs_[i];
         };
 
-        /* read data from the device.
-         * If no buffer given, one will be new allocated and must be freed by caller.
-         * \param[in] buf Buffer to write memory into. */
+        /* Write the contents of the buffer into device memory.
+         * \param[in] buf Buffer to copy from.
+         */
         void write(T* buf) {
             assert(buf != NULL);
 
@@ -279,10 +281,10 @@ class Matrix1D {
             assert(rval == cudaSuccess);
         };
 
-        /* Write the contents of the buffer into device memory.
-         * \param[in] buf Buffer to copy from.
-         */
-        T* read(T* buf=NULL) {
+        /* read data from the device.
+         * If no buffer given, one will be new allocated and must be freed by caller.
+         * \param[in] buf Buffer to write memory into. */
+        T* read(T* buf=NULL) const {
             if (buf == NULL) {
                 buf = new T[row_w_];
             }
@@ -293,7 +295,10 @@ class Matrix1D {
         };
 
         /* \return Width of row */
-        size_t width() {return row_w_; };
+        size_t width() const {return row_w_; };
+
+        /* \return a pointer to the data buffer. */
+        T* get_data() const {return data_; };
 
     private:
         // dimensions
@@ -357,9 +362,9 @@ class Vector1D {
             return ptrs_[i];
         };
 
-        /* read data from the device.
-         * If no buffer given, one will be new allocated and must be freed by caller.
-         * \param[in] buf Buffer to write memory into. */
+        /* Write the contents of the buffer into device memory.
+         * \param[in] buf Buffer to copy from.
+         */
         void write(T* buf) {
             assert(buf != NULL);
 
@@ -367,10 +372,10 @@ class Vector1D {
             assert(rval == cudaSuccess);
         };
 
-        /* Write the contents of the buffer into device memory.
-         * \param[in] buf Buffer to copy from.
-         */
-        T* read(T* buf=NULL) {
+        /* read data from the device.
+         * If no buffer given, one will be new allocated and must be freed by caller.
+         * \param[in] buf Buffer to write memory into. */
+        T* read(T* buf=NULL) const {
             if (buf == NULL) {
                 buf = new T[size_];
             }
@@ -383,8 +388,8 @@ class Vector1D {
         /* \return Width of row */
         size_t size() {return size_; };
 
-        /* Friend Functions */
-        template <class T, class V> Vector1D<T>* matMulti(const Matrix2D<T> &A, const Vector1D<V> &x, Vector1D<V>* y);
+        /* \return a pointer to the data. */
+        T* get_data() {return data_; };
 
     private:
         // dimensions
@@ -434,19 +439,21 @@ class device_ptr {
             if (!internal_) cudaFree(data_);
         };
 
-        /* read data from the device.
-         * If no buffer given, one will be new allocated and must be freed by caller.
-         * \param[in] buf Buffer to write memory into. */
+        /* Write the contents of the buffer into device memory.
+         * \param[in] buf Buffer to copy from.
+         */
         void write(T* buf) {
             assert(buf != NULL);
 
             cudaError_t rval = cudaMemcpy(data_, buf, size_bytes, cudaMemcpyHostToDevice);
             assert(rval == cudaSuccess);
         }
-        /* Write the contents of the buffer into device memory.
-         * \param[in] buf Buffer to copy from.
-         */
-        T* read(T* buf=NULL) {
+        
+
+        /* read data from the device.
+         * If no buffer given, one will be new allocated and must be freed by caller.
+         * \param[in] buf Buffer to write memory into. */
+        T* read(T* buf=NULL) const {
             if (buf == NULL) {
                 buf = new T;
             }
@@ -455,6 +462,9 @@ class device_ptr {
             assert(rval == cudaSuccess);
             return buf;
         }
+
+        /* \return a pointer to the data buffer. */
+        T* get_data() const {return data_; };
 
     private:
         // size of the object in bytes
