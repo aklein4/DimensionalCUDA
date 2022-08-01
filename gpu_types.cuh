@@ -164,12 +164,12 @@ class Matrix2D {
         /* Return a 1D column vector which references a piece of the contiguous memory.
          * If a sub-matrix vector has not been created, it is created.
          */
-        Vector1D<T>& col(size_t i) {
+        Vector1D<T>& vec(size_t i) {
             assert(i < row_w_);
 
-            if (columns_.size() == 0) process_columns();
+            if (vecs_.size() == 0) process_vecs();
 
-            return columns_[i];
+            return vecs_[i];
         };
 
         /* Write the contents of the buffer into device memory.
@@ -217,7 +217,7 @@ class Matrix2D {
         std::vector<Matrix1D<T>> layer_;
 
         // an array to hold column vectors
-        std::vector<Vector1D<T>> columns_;
+        std::vector<Vector1D<T>> vecs_;
 
         // create sub-data array
         void process() {
@@ -229,11 +229,11 @@ class Matrix2D {
         };
 
         // create sub-data array of column vectors
-        void process_columns() {
-            if (columns_.size() != 0) return;
+        void process_vecs() {
+            if (vecs_.size() != 0) return;
             // create an array of column vectors to return if indexed
             for (int i=0; i < row_w_; i++) {
-                columns_.push_back(Vector1D<T>(row_w_, data_+(i * row_w_)));
+                vecs_.push_back(Vector1D<T>(row_w_, data_+(i * row_w_)));
             }
         };
 };
