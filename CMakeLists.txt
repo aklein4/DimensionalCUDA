@@ -19,5 +19,5 @@ file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/*.cu")
 add_library(DimensionalCUDALib ${cpu_source_files} ${gpu_source_files})
 
 # create and link exe
-add_executable(DCtest main.cu)
-target_link_libraries(DCtest DimensionalCUDALib)
+add_executable(GPU_test main.cu)
+target_link_libraries(GPU_test DimensionalCUDALib)
