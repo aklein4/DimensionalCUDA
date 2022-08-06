@@ -14,10 +14,10 @@ message(STATUS "CUDA architectures set to ${CMAKE_CUDA_ARCHITECTURES}")
 project(DimensionalCUDA LANGUAGES CXX CUDA)
 
 # create library
-file(GLOB cpu_source_files "${CMAKE_SOURCE_DIR}/*.cpp")
-file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/*.cu")
+file(GLOB cpu_source_files "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
+file(GLOB gpu_source_files "${CMAKE_CURRENT_LIST_DIR}/*.cu")
 add_library(DimensionalCUDALib ${cpu_source_files} ${gpu_source_files})
 
 # create and link exe
-add_executable(GPU_test main.cu)
+add_executable(GPU_test "${CMAKE_CURRENT_LIST_DIR}/main.cu")
 target_link_libraries(GPU_test DimensionalCUDALib)

@@ -161,6 +161,17 @@ class Matrix2D {
             return layer_[i];
         };
 
+        /* Return a 1D column vector which references a piece of the contiguous memory.
+         * If a sub-matrix vector has not been created, it is created.
+         */
+        Vector1D<T>& vec(size_t i) {
+            assert(i < row_w_);
+
+            if (vecs_.size() == 0) process_vecs();
+
+            return vecs_[i];
+        };
+
         /* Write the contents of the buffer into device memory.
          * \param[in] buf Buffer to copy from.
          */
@@ -205,12 +216,24 @@ class Matrix2D {
         // an array to hold sub-matrices
         std::vector<Matrix1D<T>> layer_;
 
+        // an array to hold column vectors
+        std::vector<Vector1D<T>> vecs_;
+
         // create sub-data array
         void process() {
             if (layer_.size() != 0) return;
-            // create an array of 2D matrices to return if indexed
+            // create an array of row matrices to return if indexed
             for (int i=0; i < row_w_; i++) {
                 layer_.push_back(Matrix1D<T>(row_w_, data_+(i * row_w_)));
+            }
+        };
+
+        // create sub-data array of column vectors
+        void process_vecs() {
+            if (vecs_.size() != 0) return;
+            // create an array of column vectors to return if indexed
+            for (int i=0; i < row_w_; i++) {
+                vecs_.push_back(Vector1D<T>(row_w_, data_+(i * row_w_)));
             }
         };
 };
@@ -323,19 +346,27 @@ class Vector1D {
          * Data will be allocated and deleted upon deconstuction.
          * \param[in] size Length of the vector
          */
-        Vector1D(size_t size) {
+        Vector1D(size_t size, T* data_loc=NULL) {
             // set dimensions
             size_ = size;
             size_bytes = sizeof(T) * size_;
 
-            // Allocate data
-            cudaError_t rval = cudaMalloc(&data_, size_bytes);
-            assert(rval == cudaSuccess);
+            // Allocate or reference data. Record if new allocated for later deletion.
+            if (data_loc == NULL) {
+                internal_ = false;
+                cudaError_t rval = cudaMalloc(&data_, size_bytes);
+                assert(rval == cudaSuccess);
+            }
+            else {
+                internal_ = true;
+                data_ = data_loc;
+            }
         };
 
         /* Deconstuction only deletes data if it was created in the constructor */
         ~Vector1D() {
-            cudaFree(data_);
+            // only delete if originally new allocated
+            if (!internal_) cudaFree(data_);
         };
 
         /* Return a reference to a piece of the contiguous memory.
@@ -343,7 +374,7 @@ class Vector1D {
         device_ptr<T>& operator [](size_t i) {
             assert(i < size_);
 
-            if (ptrs_.size() != 0) process();
+            if (ptrs_.size() == 0) process();
 
             return ptrs_[i];
         };
@@ -384,12 +415,15 @@ class Vector1D {
         // pointer to memory chunk containing data
         T* data_;
 
+        // whether this is a sub-matrix, if not then data must be deleted
+        bool internal_;
+
         // an array to hold the device pointers to memory
         std::vector<device_ptr<T>> ptrs_;
 
         // create sub-data array
         void process() {
-            if (ptrs_.size() != NULL) return;
+            if (ptrs_.size() != 0) return;
 
             for (int i=0; i < size_; i++) {
                 ptrs_.push_back(device_ptr<T>(data_+i));
@@ -431,6 +465,9 @@ class device_ptr {
             cudaError_t rval = cudaMemcpy(data_, buf, size_bytes, cudaMemcpyHostToDevice);
             assert(rval == cudaSuccess);
         }
+        void write(T &input) {
+            write(&input);
+        };
 
         /* read data from the device into the provided buffer
          * \param[in] buf Buffer to write memory into. */
@@ -440,6 +477,13 @@ class device_ptr {
             cudaError_t rval = cudaMemcpy(buf, data_, size_bytes, cudaMemcpyDeviceToHost);
             assert(rval == cudaSuccess);
         }
+        T read() const {
+            T* buf = new T;
+            read(buf);
+            T val = *buf;
+            delete buf;
+            return val;
+        };
 
         /* \return the value of the pointer. */
         T get() const {

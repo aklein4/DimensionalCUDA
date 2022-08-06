@@ -42,7 +42,7 @@ int main() {
 
     // calculate Ax=y
     for (int k=0; k < 32; k++) {
-        gpu::matMulti<float, float, float>(A, x, y);
+        gpu::matMulti<float, float, float>(A, x, y, static_cast<float>(0.0));
     }
 
     timer.print("CUDA:");
