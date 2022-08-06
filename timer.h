@@ -8,25 +8,25 @@
 /* \return The current time in seconds */
 int time_s() {
   using namespace std::chrono;
-  return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+  return static_cast<int>( duration_cast<seconds>(system_clock::now().time_since_epoch()).count() );
 };
 
 /* \return The current time in ms */
 int time_ms() {
   using namespace std::chrono;
-  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  return static_cast<int>( duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() );
 };
 
 /* \return The current time in us */
 int time_us() {
   using namespace std::chrono;
-  return duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+  return static_cast<int>( duration_cast<microseconds>(system_clock::now().time_since_epoch()).count() );
 };
 
 /* \return The current time in ns */
 int time_ns() {
   using namespace std::chrono;
-  return duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count();
+  return static_cast<int>( duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count() );
 };
 
 /* Different units of time */
