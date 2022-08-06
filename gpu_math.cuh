@@ -39,6 +39,7 @@ namespace gpu {
 
 /* Take matrix A and column vector x and store the product Ax into column vector y
  * (Checks sizes)
+ * NOTE: the maximum vector size/matrix width is 1024 (512 for compute capability 1.0).
  * NOTE: for overloading purposes, multiplication operations use [V = U * T]
  * \param[in] A input matrix of type T
  * \param[in] x input vector of type U
@@ -48,6 +49,7 @@ template <class T, class U, class V>
 void matMulti(Matrix2D<T> &A, Vector1D<U> &x, Vector1D<V> &y) {
     // check that sizes match up
     assert(A.width() == x.size());
+    assert(A.width() <= 1024);
     assert(A.height() == y.size());
 
     // set block dimensions
@@ -61,7 +63,7 @@ void matMulti(Matrix2D<T> &A, Vector1D<U> &x, Vector1D<V> &y) {
 };
 
 /* Take matrix A and column vector x and store the product Ax into column vector y.
- * (DOES NOT CHECK SIZES)
+ * NOTE: the maximum vector size/matrix width is 1024 (512 for compute capability 1.0).
  * NOTE: for overloading purposes, multiplication operations use [V = U * T]
  * \param[in] A input matrix of type T
  * \param[in] x input vector of type U
