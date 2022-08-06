@@ -5,7 +5,7 @@
 #include "timer.h"
 
 int main() {
-    size_t test_size = 128;
+    size_t test_size = 1024;
 
     // create a column vector and write values to it
     float* x_setter = new float[test_size];
@@ -42,7 +42,7 @@ int main() {
 
     // calculate Ax=y
     for (int k=0; k < 32; k++) {
-        gpu::matMulti<float, float, float>(A, x, y, static_cast<float>(0.0));
+        gpu::matMulti_opt<float, float, float>(A, x, y);
     }
 
     timer.print("CUDA:");
