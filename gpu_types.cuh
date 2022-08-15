@@ -465,8 +465,14 @@ class device_ptr {
             cudaError_t rval = cudaMemcpy(data_, buf, size_bytes, cudaMemcpyHostToDevice);
             assert(rval == cudaSuccess);
         }
-        void write(T &input) {
-            write(&input);
+        /* Write the contents of the buffer into using an object instead of buffer.
+         * \param[in] input Object to copy from.
+         */
+        void set(T input) {
+            T* buf = new T;
+            *buf = input;
+            write(buf);
+            delete buf;
         };
 
         /* read data from the device into the provided buffer
@@ -477,25 +483,14 @@ class device_ptr {
             cudaError_t rval = cudaMemcpy(buf, data_, size_bytes, cudaMemcpyDeviceToHost);
             assert(rval == cudaSuccess);
         }
-        T read() const {
+        /* \return The contents of the pointer as an object */
+        T get() const {
             T* buf = new T;
             read(buf);
             T val = *buf;
             delete buf;
             return val;
         };
-
-        /* \return the value of the pointer. */
-        T get() const {
-            T* buf = new T;
-
-            cudaError_t rval = cudaMemcpy(buf, data_, size_bytes, cudaMemcpyDeviceToHost);
-            assert(rval == cudaSuccess);
-
-            T val = *buf;
-            delete buf;
-            return val;
-        }
 
         /* \return a pointer to the data buffer. */
         T* get_data() {return data_; };
