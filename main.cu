@@ -41,7 +41,7 @@ int main() {
     Timer timer(TIME_UNIT::us);
 
     // calculate Ax=y
-    gpu::matMulti_opt<float, float, float>(A, x, y);
+    gpu::matMulti<float, float, float>(A, x, y, 0.0, false);
 
     timer.print("CUDA:");
 
