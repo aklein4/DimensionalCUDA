@@ -5,7 +5,7 @@
 #include "timer.h"
 
 int main() {
-    size_t test_size = 1024;
+    size_t test_size = 32;
 
     // create a column vector and write values to it
     float* x_setter = new float[test_size];
@@ -63,9 +63,9 @@ int main() {
     timer.print("CPU:");
 
 
-   //for (int i=0; i<test_size; i++) {
-   // std::cout << y_setter[i] << " -> " << y_out[i] << std::endl;
-   //}
+   for (int i=0; i<test_size; i++) {
+    std::cout << y_setter[i] << " -> " << y_out[i] << std::endl;
+   }
 
 
     delete[] x_setter;

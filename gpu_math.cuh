@@ -17,22 +17,27 @@ namespace DIM_CUDA_HIDDEN {
 template <class T, class U, class V>
 __global__ void gpu_matMulti(T* A, U* x, V* y, int size, V zero) {
     __shared__ V s[32];
+    __shared__ V u[32];
 
     // i = location in input vector x
     int i = threadIdx.x;
     // j = location in output vector y
-    int j = blockIdx.x;
+    int j = blockIdx.x * 2;
 
     // sum up the convolutions between i and i+32
     V first_sum = zero;
+    V second_sum = zero;
     for (int n = 0; n < size/32; n++) {
         int ind = (j*size) + i + n;
+        float x_val = x[i+n];
 
-        first_sum += A[ind] * x[i+n];
+        first_sum += A[ind] * x_val;
+        second_sum += A[ind+size] * x_val;
     }
 
     // put into shared memory for mutual access
     s[i] = first_sum;
+    u[i] = second_sum;
     __syncthreads();
 
     #pragma unroll
@@ -42,6 +47,12 @@ __global__ void gpu_matMulti(T* A, U* x, V* y, int size, V zero) {
             my_sum += s[i+w];
             s[i] = my_sum;
         }
+        else if (31-i < w) {
+            int my_ind = 31-i;
+            float my_sum = u[my_ind];
+            my_sum += u[my_ind+w];
+            u[my_ind] = my_sum;
+        }
         __syncthreads();
     }
 
@@ -49,6 +60,11 @@ __global__ void gpu_matMulti(T* A, U* x, V* y, int size, V zero) {
         float my_sum = s[0];
         my_sum += s[1];
         y[j] = my_sum;
+    }
+    else if (i == 1) {
+        float my_sum = u[0];
+        my_sum += u[1];
+        y[j+1] = my_sum;
     }
 };
 
@@ -72,10 +88,11 @@ void matMulti(Matrix2D<T> &A, Vector1D<U> &x, Vector1D<V> &y, V zero, bool check
         if (A.width() != x.size()) std::cout << "ERROR: Matrix Multiplication input size does not match matrix!" << std::endl;
         if (A.width() % 32 != 0) std::cout << "ERROR: Matrix Multiplication input size is not multiple of 32!" << std::endl;
         if (A.height() != y.size()) std::cout << "ERROR: Matrix Multiplication input size does not match matrix!" << std::endl;
+        if (A.height() % 2 != 0) std::cout << "ERROR: Matrix Multiplication output size is not multiple of 2!" << std::endl;
     }
 
     // do multiplication
-    DIM_CUDA_HIDDEN::gpu_matMulti<T, U, V><<<A.height(), 32>>>(
+    DIM_CUDA_HIDDEN::gpu_matMulti<T, U, V><<<A.height()/2, 32>>>(
         A.get_data(), x.get_data(), y.get_data(), A.width(), zero
     );
 };
